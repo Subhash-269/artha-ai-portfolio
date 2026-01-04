@@ -30,7 +30,7 @@ COPY requirements.txt ./
 # Install Python dependencies plus gunicorn for production serving
 RUN pip install --no-cache-dir -r requirements.txt gunicorn==21.2.0
 
-# Copy Django project
+# Copy Django project (including entrypoint.sh)
 COPY . .
 
 # Copy built React app into Django app directory
@@ -38,4 +38,7 @@ COPY --from=frontend-build /frontend/build ./front_end/build
 
 ENV PORT=8000
 
-CMD ["gunicorn", "portfolio.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Ensure entrypoint script is executable and run it on container start
+RUN chmod +x /app/entrypoint.sh
+
+CMD ["/app/entrypoint.sh"]

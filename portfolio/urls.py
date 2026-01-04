@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.urls import path
 from django.urls import include, re_path
 from django.views.generic import TemplateView
+from django.conf import settings
+from django.conf.urls.static import static
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -46,7 +48,12 @@ urlpatterns = [
     path('model/', include('backend.url')),
     # New API prefix so frontend calls like /api/auth/login/ work
     path('api/', include('backend.url')),
-    # Catch-all route: serve the React app's index.html for any non-API path
-    re_path(r'^(?!api/|model/|admin/|swagger|redoc).*$', TemplateView.as_view(template_name='index.html')),
+    # Catch-all route: serve the React app's index.html for any non-API/static path
+    # Note: we explicitly exclude "static/" so that asset requests are not routed here.
+    re_path(r'^(?!api/|model/|admin/|swagger|redoc|static/).*$', TemplateView.as_view(template_name='index.html')),
 ]
+
+# In development (and in this Docker setup), serve React build static files via Django
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.BASE_DIR / 'front_end' / 'build' / 'static')
 

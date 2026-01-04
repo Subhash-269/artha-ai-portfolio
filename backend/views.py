@@ -898,8 +898,9 @@ def train_by_sectors(request):
             # Limit to a reasonable recent window for metrics
             close_recent = close_mat_all.tail(recent_days)
             daily_ret = close_recent.pct_change().dropna()
-            # Monthly returns for covariance-based risk
-            monthly_close = close_mat_all.resample('ME').last().dropna()
+            # Monthly returns for covariance-based risk (month-end frequency)
+            # Use 'M' instead of deprecated/invalid 'ME' to avoid resample errors.
+            monthly_close = close_mat_all.resample('M').last().dropna()
             monthly_ret = monthly_close.pct_change().dropna()
             cov_m = monthly_ret.cov().values
 
