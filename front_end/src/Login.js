@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE = process.env.REACT_APP_API_BASE || '';
+
 const Login = ({ setIsAuthenticated }) => {
   const [formData, setFormData] = useState({
     username: '',
@@ -24,7 +26,7 @@ const Login = ({ setIsAuthenticated }) => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/login/', {
+      const response = await fetch(`${API_BASE}/api/auth/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -16,9 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from django.urls import include
-...
-from django.urls import re_path
+from django.urls import include, re_path
+from django.views.generic import TemplateView
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -47,4 +46,7 @@ urlpatterns = [
     path('model/', include('backend.url')),
     # New API prefix so frontend calls like /api/auth/login/ work
     path('api/', include('backend.url')),
+    # Catch-all route: serve the React app's index.html for any non-API path
+    re_path(r'^(?!api/|model/|admin/|swagger|redoc).*$', TemplateView.as_view(template_name='index.html')),
 ]
+

@@ -5,11 +5,13 @@ const Dashboard = ({ children, setIsAuthenticated }) => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
+  const API_BASE = process.env.REACT_APP_API_BASE || '';
+
   const handleLogout = async () => {
     const token = localStorage.getItem('token');
     
     try {
-      await fetch('http://localhost:8000/api/auth/logout/', {
+      await fetch(`${API_BASE}/api/auth/logout/`, {
         method: 'POST',
         headers: {
           'Authorization': `Token ${token}`,

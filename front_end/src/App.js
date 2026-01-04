@@ -579,6 +579,7 @@ function PortfolioResults({ result }) {
 }
 
 function AssetPerformanceTable({ data, checked, handleCheck, onCreatePortfolio, sp500Averages, subsectors, subChecked, setSubChecked }) {
+  const API_BASE = process.env.REACT_APP_API_BASE || '';
   const [expanded, setExpanded] = React.useState(false);
   const isSubsectorsProvided = Array.isArray(subsectors) && subsectors.length > 0;
   const isStockMarketChecked = subChecked.every(Boolean);
@@ -590,7 +591,7 @@ function AssetPerformanceTable({ data, checked, handleCheck, onCreatePortfolio, 
 
   React.useEffect(() => {
     let isMounted = true;
-    fetch('/model/commodities/returns/')
+    fetch(`${API_BASE}/model/commodities/returns/`)
       .then((res) => res.json())
       .then((json) => {
         if (!isMounted || !Array.isArray(json)) return;

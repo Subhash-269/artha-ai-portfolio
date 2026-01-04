@@ -61,7 +61,8 @@ ROOT_URLCONF = 'portfolio.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        # Include the React build directory so index.html can be served by Django
+        'DIRS': [BASE_DIR / 'front_end' / 'build'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -122,7 +123,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+# Serve the built React app's static files when deployed as a single service.
+# The React build output is copied to front_end/build by the Dockerfile.
+STATICFILES_DIRS = [
+    BASE_DIR / 'front_end' / 'build' / 'static',
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
