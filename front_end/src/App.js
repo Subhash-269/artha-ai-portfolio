@@ -58,7 +58,7 @@ function DashboardHeader() {
   return (
     <header className="dashboard-header" style={{ position: 'sticky', top: 0, zIndex: 1000, background: '#f3f4f6', paddingTop: '0.75rem' }}>
       <div className="dashboard-title" style={{ color: '#22223b', fontWeight: 700, fontSize: '1.8rem', letterSpacing: '0.2px' }}>
-        EAI 6050: AI Portfolio
+        Artha: AI Portfolio Engine
       </div>
     </header>
   );
