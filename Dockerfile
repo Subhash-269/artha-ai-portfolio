@@ -25,10 +25,11 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential \ 
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt ./
+COPY requirements.docker.txt ./
 
-# Install Python dependencies plus gunicorn for production serving
-RUN pip install --no-cache-dir -r requirements.txt gunicorn==21.2.0
+# Install Python dependencies (without torch), then CPU-only torch and gunicorn for production serving
+RUN pip install --no-cache-dir -r requirements.docker.txt gunicorn==21.2.0 \
+    && pip install --no-cache-dir torch==2.3.1+cpu --index-url https://download.pytorch.org/whl/cpu
 
 # Copy Django project (including entrypoint.sh)
 COPY . .
