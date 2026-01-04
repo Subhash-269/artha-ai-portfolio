@@ -1,6 +1,8 @@
 from django.urls import path
 from .views import *
 from .dataset_views import sp500_gics_sectors, gics_sector_returns, gics_sector_timeseries, commodities_returns, commodities_timeseries
+from .auth_views import signup, user_login, user_logout, user_info
+
 urlpatterns = [
     path('test/', test, name='test'),
     path('train_model/', train_model, name='train_model'),
@@ -10,5 +12,10 @@ urlpatterns = [
     path('sp500/gics-returns/', gics_sector_returns, name='gics_sector_returns'),
     path('sp500/gics-timeseries/', gics_sector_timeseries, name='gics_sector_timeseries'),
     path('commodities/returns/', commodities_returns, name='commodities_returns'),
-    path('commodities/timeseries/', commodities_timeseries, name='commodities_timeseries')
+    path('commodities/timeseries/', commodities_timeseries, name='commodities_timeseries'),
+    # Authentication endpoints
+    path('auth/signup/', signup, name='signup'),
+    path('auth/login/', user_login, name='login'),
+    path('auth/logout/', user_logout, name='logout'),
+    path('auth/user/', user_info, name='user_info'),
 ]

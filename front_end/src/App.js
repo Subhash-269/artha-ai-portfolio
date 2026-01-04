@@ -54,11 +54,169 @@ const assetPerformanceData = [
   // { asset: 'Long Treasuries', y1: 1.71, y3: 0.59, y5: -7.15 },
 ];
 
-function DashboardHeader() {
+function DashboardHeader({ user, onLogout }) {
+  const displayName = user?.username || user?.first_name || 'User';
+  const [menuOpen, setMenuOpen] = React.useState(false);
+
+  const toggleMenu = () => {
+    setMenuOpen((prev) => !prev);
+  };
+
+  const handleLogoutClick = () => {
+    setMenuOpen(false);
+    if (onLogout) onLogout();
+  };
+
   return (
-    <header className="dashboard-header" style={{ position: 'sticky', top: 0, zIndex: 1000, background: '#f3f4f6', paddingTop: '0.75rem' }}>
-      <div className="dashboard-title" style={{ color: '#22223b', fontWeight: 700, fontSize: '1.8rem', letterSpacing: '0.2px' }}>
-        Artha: AI Portfolio Engine
+    <header
+      className="dashboard-header"
+      style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000,
+        background: '#f3f4f6',
+        padding: '0.75rem 2rem 0.75rem 2rem',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1.5rem',
+        }}
+      >
+        <div
+          className="dashboard-title"
+          style={{
+            color: '#22223b',
+            fontWeight: 700,
+            fontSize: '1.8rem',
+            letterSpacing: '0.2px',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Artha: AI Portfolio Engine
+        </div>
+
+        <div
+          style={{
+            marginLeft: 'auto',
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            fontSize: '0.9rem',
+          }}
+        >
+          <button
+            type="button"
+            onClick={toggleMenu}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            <div
+              style={{
+                color: '#4b5563',
+                padding: '0.35rem 0.9rem',
+                borderRadius: '999px',
+                background: '#e5e7eb',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                boxShadow: menuOpen
+                  ? '0 8px 18px rgba(15,23,42,0.18)'
+                  : '0 4px 10px rgba(148,163,184,0.35)',
+                transition: 'box-shadow 0.15s ease, transform 0.15s ease',
+                transform: menuOpen ? 'translateY(0px)' : 'translateY(0px)',
+              }}
+            >
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '999px',
+                  background: '#10b981',
+                }}
+              />
+              <span style={{ color: '#374151' }}>Welcome,</span>
+              <strong style={{ color: '#111827' }}>{displayName}</strong>
+              <span
+                style={{
+                  marginLeft: 2,
+                  fontSize: '0.7rem',
+                  color: '#6b7280',
+                  transform: menuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.15s ease',
+                }}
+              >
+                ▾
+              </span>
+            </div>
+          </button>
+
+          {menuOpen && onLogout && (
+            <div
+              style={{
+                position: 'absolute',
+                right: 0,
+                top: '2.4rem',
+                minWidth: '160px',
+                background: 'white',
+                borderRadius: '0.75rem',
+                boxShadow:
+                  '0 14px 40px rgba(15,23,42,0.22), 0 0 0 1px rgba(148,163,184,0.12)',
+                padding: '0.4rem 0.3rem',
+                zIndex: 1100,
+              }}
+            >
+              <button
+                type="button"
+                onClick={handleLogoutClick}
+                style={{
+                  width: '100%',
+                  textAlign: 'left',
+                  border: 'none',
+                  background: 'transparent',
+                  padding: '0.55rem 0.85rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  fontSize: '0.85rem',
+                  color: '#b91c1c',
+                  cursor: 'pointer',
+                  borderRadius: '0.6rem',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#fef2f2';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <span
+                  style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: '999px',
+                    border: '1px solid rgba(248,113,113,0.6)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.7rem',
+                  }}
+                >
+                  ⎋
+                </span>
+                <span>Logout</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
@@ -848,7 +1006,7 @@ function CompositeViewer() {
   );
 }
 
-function DashboardDemo() {
+function DashboardDemo({ user, onLogout }) {
 
   const [activeSegment, setActiveSegment] = React.useState(0);
   const segments = ['Asset Classes', 'S&P 500 Stocks', 'Composite', 'Portfolios'];
@@ -1159,7 +1317,7 @@ function DashboardDemo() {
 
   return (
     <div className="dashboard-container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '2vw' }}>
-      <DashboardHeader />
+      <DashboardHeader user={user} onLogout={onLogout} />
       <SegmentedControl segments={segments} active={activeSegment} onChange={setActiveSegment} />
       
       {/* Loading overlay */}
@@ -1465,3 +1623,5 @@ function DashboardDemo() {
 }
 
 export default DashboardDemo;
+
+export { DashboardDemo };
