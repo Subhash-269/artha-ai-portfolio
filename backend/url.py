@@ -2,6 +2,7 @@ from django.urls import path
 from .views import *
 from .dataset_views import sp500_gics_sectors, gics_sector_returns, gics_sector_timeseries, commodities_returns, commodities_timeseries
 from .auth_views import signup, user_login, user_logout, user_info
+from .portfolio_views import user_portfolios, latest_user_portfolio
 
 urlpatterns = [
     path('test/', test, name='test'),
@@ -18,4 +19,7 @@ urlpatterns = [
     path('auth/login/', user_login, name='login'),
     path('auth/logout/', user_logout, name='logout'),
     path('auth/user/', user_info, name='user_info'),
+    # User portfolio persistence
+    path('portfolios/', user_portfolios, name='user_portfolios'),
+    path('portfolios/latest/', latest_user_portfolio, name='latest_user_portfolio'),
 ]

@@ -1014,6 +1014,8 @@ function DashboardDemo({ user, onLogout }) {
   const [showPortfolio, setShowPortfolio] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [portfolioData, setPortfolioData] = React.useState(null);
+  const [savedPortfolios, setSavedPortfolios] = React.useState([]);
+  const [selectedPortfolioId, setSelectedPortfolioId] = React.useState(null);
   const [sectorReturns, setSectorReturns] = React.useState(null);
   const [sp500Averages, setSp500Averages] = React.useState(null);
   const [commoditiesReturns, setCommoditiesReturns] = React.useState(null);
@@ -1298,6 +1300,39 @@ function DashboardDemo({ user, onLogout }) {
       if (!res.ok) throw new Error('Training request failed');
       const result = await res.json();
 
+      // Persist the generated portfolio for the authenticated user
+      try {
+        const token = window.localStorage.getItem('token');
+        if (token) {
+          const saveRes = await fetch(`${API_BASE}/api/portfolios/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Token ${token}`,
+            },
+            body: JSON.stringify({
+              name: '',
+              sectors: Array.isArray(sectors) ? sectors : [],
+              commodities: Array.isArray(commodities) ? commodities : [],
+              result,
+            }),
+          });
+          if (saveRes.ok) {
+            const saved = await saveRes.json();
+            setSavedPortfolios((prev) => {
+              const filtered = Array.isArray(prev) ? prev.filter((p) => p.id !== saved.id) : [];
+              return [saved, ...filtered];
+            });
+            if (saved && typeof saved.id !== 'undefined') {
+              setSelectedPortfolioId(saved.id);
+            }
+          }
+        }
+      } catch (saveErr) {
+        // Do not block the UI if persistence fails; just log it
+        console.error('Failed to save portfolio for user:', saveErr);
+      }
+
       setPortfolioData({ result });
       setShowPortfolio(true);
       setActiveSegment(3);
@@ -1308,11 +1343,67 @@ function DashboardDemo({ user, onLogout }) {
     }
   };
 
+  // On dashboard load, fetch all saved portfolios for the authenticated user
+  React.useEffect(() => {
+    const token = window.localStorage.getItem('token');
+    if (!token) return;
+
+    const controller = new AbortController();
+    fetch(`${API_BASE}/api/portfolios/`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Token ${token}`,
+      },
+      signal: controller.signal,
+    })
+      .then((res) => {
+        if (res.status === 401) {
+          return [];
+        }
+        if (!res.ok) {
+          throw new Error('Failed to fetch user portfolios');
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (!Array.isArray(data)) return;
+        setSavedPortfolios(data);
+        if (data.length > 0 && !portfolioData) {
+          const latest = data[0];
+          if (latest && typeof latest.id !== 'undefined') {
+            setSelectedPortfolioId(latest.id);
+          }
+          if (latest && latest.result) {
+            setPortfolioData({ result: latest.result });
+            setShowPortfolio(true);
+          }
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching user portfolios:', err);
+      });
+
+    return () => controller.abort();
+  }, [API_BASE]);
+
   const getRowVals = (row) => {
     if (row.asset === 'US Stock Market (S&P 500)' && sp500Averages) {
       return sp500Averages;
     }
     return { y1: row.y1, y3: row.y3, y5: row.y5 };
+  };
+
+  const handleSelectSavedPortfolio = (idOrValue) => {
+    if (idOrValue == null || idOrValue === '') return;
+    const id = typeof idOrValue === 'string' ? Number(idOrValue) : idOrValue;
+    const found = Array.isArray(savedPortfolios)
+      ? savedPortfolios.find((p) => p.id === id)
+      : null;
+    if (!found || !found.result) return;
+    setSelectedPortfolioId(id);
+    setPortfolioData({ result: found.result });
+    setShowPortfolio(true);
+    setActiveSegment(3);
   };
 
   return (
@@ -1360,7 +1451,55 @@ function DashboardDemo({ user, onLogout }) {
       {/* Main content based on active segment */}
       {activeSegment === 3 ? (
         !loading ? (
-          <PortfolioResults result={portfolioData?.result} />
+          <div className="card" style={{ background: '#f3f4f6', borderRadius: '1.5rem', boxShadow: '0 1px 8px rgba(30,41,59,0.06)', padding: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', gap: '0.75rem' }}>
+              <h3 style={{ margin: 0, color: '#22223b', fontSize: '1.3rem', fontWeight: 700 }}>Portfolio Results</h3>
+              {Array.isArray(savedPortfolios) && savedPortfolios.length > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.85rem', color: '#6b7280' }}>Experiments:</span>
+                  <select
+                    value={selectedPortfolioId ?? ''}
+                    onChange={(e) => handleSelectSavedPortfolio(e.target.value)}
+                    style={{
+                      padding: '0.35rem 0.7rem',
+                      borderRadius: '0.75rem',
+                      border: '1px solid #d1d5db',
+                      fontSize: '0.85rem',
+                      color: '#111827',
+                      background: '#ffffff',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {savedPortfolios.map((p, idx) => {
+                      const label = (p.name && p.name.trim())
+                        ? p.name
+                        : `Portfolio ${savedPortfolios.length - idx}`;
+                      const createdAt = p.created_at ? new Date(p.created_at) : null;
+                      const suffix = createdAt
+                        ? createdAt.toLocaleString(undefined, {
+                            month: 'short',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
+                        : '';
+                      return (
+                        <option key={p.id || idx} value={p.id}>
+                          {label}{suffix ? ` • ${suffix}` : ''}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              )}
+            </div>
+            <PortfolioResults result={portfolioData?.result} />
+            {(!Array.isArray(savedPortfolios) || savedPortfolios.length === 0) && (
+              <div style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#6b7280' }}>
+                No saved portfolios yet. Create one from Asset Classes.
+              </div>
+            )}
+          </div>
         ) : null
       ) : activeSegment === 2 ? (
         <CompositeViewer />

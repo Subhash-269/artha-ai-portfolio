@@ -11,6 +11,9 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import AllowAny
+
 
 
 from rest_framework.decorators import api_view
@@ -510,6 +513,7 @@ train_sectors_schema = openapi.Schema(
     responses={200: 'Success', 400: 'Bad Request'}
 )
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def train_by_sectors(request):
     try:
         comm_assets_used = []
