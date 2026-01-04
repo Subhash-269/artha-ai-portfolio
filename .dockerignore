@@ -1,0 +1,37 @@
+# Reduce Docker build context and final image size
+
+# Git and VCS
+.git
+.gitignore
+
+# Python caches
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Node modules and build artifacts (they will be reinstalled/built inside Docker)
+front_end/node_modules
+front_end/build
+
+# Local databases and env
+db.sqlite3
+*.sqlite3
+.env
+
+# DVC cache and large experiment artifacts
+.dvc
+.dvcignore
+
+# Notebooks and output artifacts not needed in the container
+notebooks
+outputs
+
+# Editor/OS junk
+.vscode
+.idea
+*.log
+*.tmp
+*.swp
+Thumbs.db
+Desktop.ini
